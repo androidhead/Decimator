@@ -9,29 +9,9 @@
  int TOGGLE = 2; 
 
 void setup()
-{
-  /* turn on the timer clock in the power management controller */
-  pmc_set_writeprotect(false);
-  pmc_enable_periph_clk(ID_TC4);
+{   
+  setupTimers();
 
-  /* we want wavesel 01 with RC */
-  TC_Configure(/* clock */TC1,/* channel */1, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC 
-  | TC_CMR_TCCLKS_TIMER_CLOCK2);
-  //set initial sample rate
-  TC_SetRC(TC1, 1, 238);
-  //TC_SetRC(TC1, 1, 109); // sets <>   96 Khz interrupt rate
-  
-  TC_Start(TC1, 1);
- 
-  // enable timer interrupts on the timer
-  TC1->TC_CHANNEL[1].TC_IER=TC_IER_CPCS;
-  TC1->TC_CHANNEL[1].TC_IDR=~TC_IER_CPCS;
- 
-  /* Enable the interrupt in the nested vector interrupt controller */
-  /* TC4_IRQn where 4 is the timer number * timer channels (3) + the channel number 
-  (=(1*3)+1) for timer1 channel1 */
-  NVIC_EnableIRQ(TC4_IRQn);
-   
   //ADC Configuration
   ADC->ADC_MR |= 0x80;   // DAC in free running mode.
   ADC->ADC_CR=2;         // Starts ADC conversion.
@@ -40,6 +20,48 @@ void setup()
   //DAC Configuration
   analogWrite(DAC0,0);  // Enables DAC0
   analogWrite(DAC1,0);  // Enables DAC1  
+}
+
+void setupTimers()
+{
+  //I could only get 1 timer to work at a time.  I must be doing something wrong.
+  //but heres the spec just in case
+  /*
+  ISR/IRQ	TC       	Channel	Due pins
+  TC0	        TC0	        0	2, 13
+  TC1	        TC0	        1	60, 61
+  TC2	        TC0	        2	58
+  TC3	        TC1	        0	none  <- this line in the example above
+  TC4	        TC1	        1	none
+  TC5	        TC1	        2	none
+  TC6	        TC2	        0	4, 5
+  TC7	        TC2	        1	3, 10
+  TC8	        TC2	        2	11, 12
+  */
+  
+  /* turn on the timer clock in the power management controller */
+  pmc_set_writeprotect(false);
+
+  //TC4_Handler
+    pmc_enable_periph_clk(ID_TC4);
+
+    /* we want wavesel 01 with RC */
+    TC_Configure(/* clock */TC1,/* channel */1, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC 
+    | TC_CMR_TCCLKS_TIMER_CLOCK2);
+    //set initial sample rate
+    TC_SetRC(TC1, 1, 238);
+    //TC_SetRC(TC1, 1, 109); // sets <>   96 Khz interrupt rate
+    
+    TC_Start(TC1, 1);
+   
+    // enable timer interrupts on the timer
+    TC1->TC_CHANNEL[1].TC_IER=TC_IER_CPCS;
+    TC1->TC_CHANNEL[1].TC_IDR=~TC_IER_CPCS;
+   
+    /* Enable the interrupt in the nested vector interrupt controller */
+    /* TC4_IRQn where 4 is the timer number * timer channels (3) + the channel number 
+    (=(1*3)+1) for timer1 channel1 */
+    NVIC_EnableIRQ(TC4_IRQn);  
 }
 
 void TC4_Handler()
