@@ -42,29 +42,24 @@ void setup()
   analogWrite(DAC1,0);  // Enables DAC1  
 }
 
-
-void loop()
-{
-  //Read the ADCs
-  while((ADC->ADC_ISR & 0x1CC0)!=0x1CC0);  // wait for ADC 0, 1, 8, 9, 10 conversion complete.
-  in_ADC0=ADC->ADC_CDR[7];             // read data from ADC0
-  in_ADC1=ADC->ADC_CDR[6];             // read data from ADC1  
-
-
-  POT0=ADC->ADC_CDR[10];                   // read data from ADC8        
-  POT1=ADC->ADC_CDR[11];                   // read data from ADC9   
-  POT2=ADC->ADC_CDR[12];                   // read data from ADC10    
-}
-
 void TC4_Handler()
 {
   // We need to get the status to clear it and allow the interrupt to fire again
   TC_GetStatus(TC1, 1);
   
+  //Read the ADCs
+  while((ADC->ADC_ISR & 0x1CC0)!=0x1CC0);  // wait for ADC 0, 1, 8, 9, 10 conversion complete.
+  in_ADC0=ADC->ADC_CDR[7];             // read data from ADC0
+  in_ADC1=ADC->ADC_CDR[6];             // read data from ADC1  
+  POT0=ADC->ADC_CDR[10];                   // read data from ADC8        
+  POT1=ADC->ADC_CDR[11];                   // read data from ADC9   
+  POT2=ADC->ADC_CDR[12];                   // read data from ADC10    
+
   //bit depth
   in_ADC0 = ChangeBitDepth(in_ADC0, POT1);
   in_ADC1 = ChangeBitDepth(in_ADC1, POT1);
 
+  //sample rate
   ChangeSampleRate(POT0);
   
   //Adjust the volume with POT2
@@ -82,7 +77,7 @@ void TC4_Handler()
 void ChangeSampleRate(int potPosition)
 {
   int sampleSize=map(potPosition,0,4095,109,8400);   
-  //10500/sample size = sampling rate in MHz
+  //10500/sampleSize = sampling rate in MHz
   TC_SetRC(TC1, 1, sampleSize); 
 }
 
