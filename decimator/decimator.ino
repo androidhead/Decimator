@@ -78,8 +78,8 @@ void TC4_Handler()
   POT2=ADC->ADC_CDR[12];                   // read data from ADC10    
 
   //bit depth
-  in_ADC0 = ChangeBitDepth(in_ADC0, POT1);
-  in_ADC1 = ChangeBitDepth(in_ADC1, POT1);
+  in_ADC0 = ChangeBitDepth3(in_ADC0, POT1);
+  in_ADC1 = ChangeBitDepth3(in_ADC1, POT1);
 
   //sample rate
   ChangeSampleRate(POT0);
@@ -95,13 +95,13 @@ void TC4_Handler()
   dacc_write_conversion_data(DACC_INTERFACE, out_DAC1);//write on DAC
 }
 
-
 void ChangeSampleRate(int potPosition)
 {
   int sampleSize=map(potPosition,0,4095,109,8400);   
   //10500/sampleSize = sampling rate in MHz
   TC_SetRC(TC1, 1, sampleSize); 
 }
+
 
 int ChangeBitDepth(int input, int potPosition)
 {
@@ -139,4 +139,74 @@ int ChangeBitDepth(int input, int potPosition)
   input = map(input, 0, scaleTo, 0, 4095);
     
   return input;
+}
+
+int ChangeBitDepth2(int input, int potPosition)
+{
+  //invert pot value
+  potPosition = map(potPosition, 0, 4095, 4095, 0); 
+  return input & potPosition;
+}
+
+
+int ChangeBitDepth3(int input, int potPosition)
+{  
+  int bitmask = 2147483647; //int max is default bit mask (aka does nothing)
+
+  //determine severity of bit mask
+  potPosition = map(potPosition, 0, 4095, 0, 12);  
+   
+  switch (potPosition) {
+    case 1:
+      //0111 1111 1111 1111 1111 1111 0000 0000
+      bitmask = 2147483646;         
+      break;
+    case 2:
+      //0111 1111 1111 1111 1111 1111 1111 1100
+      bitmask = 2147483644;         
+      break;
+    case 3:
+      //0111 1111 1111 1111 1111 1111 1111 1000
+      bitmask = 2147483640;         
+      break;
+    case 4:
+      //0111 1111 1111 1111 1111 1111 1111 0000
+      bitmask = 2147483632;         
+      break;
+    case 5:
+      //0111 1111 1111 1111 1111 1111 1110 0000
+      bitmask = 2147483616;         
+      break;
+    case 6:
+      //0111 1111 1111 1111 1111 1111 1100 0000
+      bitmask = 2147483584;         
+      break;
+    case 7:
+      //0111 1111 1111 1111 1111 1111 1000 0000
+      bitmask = 2147483520;         
+      break;
+    case 8:
+      //0111 1111 1111 1111 1111 1111 0000 0000
+      bitmask = 2147483392;         
+      break;
+    case 9:
+      //0111 1111 1111 1111 1111 1110 0000 0000
+      bitmask = 2147483136;         
+      break;
+    case 10:
+      //0111 1111 1111 1111 1111 1100 0000 0000
+      bitmask = 2147482624;         
+      break;
+    case 11:
+      //0111 1111 1111 1111 1111 1000 0000 0000
+      bitmask = 2147481600;         
+      break;
+    case 12:
+      //0111 1111 1111 1111 1111 0000 0000 0000
+      bitmask = 2147479552;         
+      break;
+  }
+
+      
+  return input & bitmask;
 }
