@@ -78,8 +78,8 @@ void TC4_Handler()
   POT2=ADC->ADC_CDR[12];                   // read data from ADC10    
 
   //bit depth
-  in_ADC0 = ChangeBitDepth3(in_ADC0, POT1);
-  in_ADC1 = ChangeBitDepth3(in_ADC1, POT1);
+  in_ADC0 = ChangeBitDepth(in_ADC0, POT1);
+  in_ADC1 = ChangeBitDepth(in_ADC1, POT1);
 
   //sample rate
   ChangeSampleRate(POT0);
@@ -210,3 +210,33 @@ int ChangeBitDepth3(int input, int potPosition)
       
   return input & bitmask;
 }
+
+int ChangeBitDepth4(int input, int potPosition)
+{    
+  //todo: this could be declared as a "const" at beginning of program.  would be more efficient
+  //represents the part of the mask that doesn't matter because it's beyond the 12 bits that the converter returns
+  int baseBitMask = 2147479552;
+     
+  int bitmask = 4095; //int max is default bit mask (aka does nothing)
+  
+  //determine severity of bit mask
+  potPosition = map(potPosition, 0, 4095, 0, 3);  
+   
+  switch (potPosition) {
+    case 1:
+      //1010 1010 1010
+      bitmask = 2730;         
+      break;
+    case 2:
+      //0101 0101 0101
+      bitmask = 1365;         
+      break;
+    case 3:
+      //1000 1000 1000
+      bitmask = 2184;         
+      break;
+  }
+      
+  return input & (bitmask + baseBitMask);
+}
+
