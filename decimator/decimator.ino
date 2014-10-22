@@ -135,7 +135,7 @@ int ChangeBitDepth(int input, int potPosition)
   //todo:  it'd be much cooler to use some bit-wise math here instead of map()   
   //scale to scaleTo values
   input =  map(input, 0, 4095, 0, scaleTo);
-  //scale back to 4096
+  //scale back to 4095
   input = map(input, 0, scaleTo, 0, 4095);
     
   return input;
@@ -158,52 +158,52 @@ int ChangeBitDepth3(int input, int potPosition)
    
   switch (potPosition) {
     case 1:
-      //0111 1111 1111 1111 1111 1111 0000 0000
-      bitmask = 2147483646;         
+      //0111 1111 1111 1111 1111 1111 1111 1110
+      bitmask = -2147483646;         
       break;
     case 2:
       //0111 1111 1111 1111 1111 1111 1111 1100
-      bitmask = 2147483644;         
+      bitmask = -2147483644;         
       break;
     case 3:
       //0111 1111 1111 1111 1111 1111 1111 1000
-      bitmask = 2147483640;         
+      bitmask = -2147483640;         
       break;
     case 4:
       //0111 1111 1111 1111 1111 1111 1111 0000
-      bitmask = 2147483632;         
+      bitmask = -2147483632;         
       break;
     case 5:
       //0111 1111 1111 1111 1111 1111 1110 0000
-      bitmask = 2147483616;         
+      bitmask = -2147483616;         
       break;
     case 6:
       //0111 1111 1111 1111 1111 1111 1100 0000
-      bitmask = 2147483584;         
+      bitmask = -2147483584;         
       break;
     case 7:
       //0111 1111 1111 1111 1111 1111 1000 0000
-      bitmask = 2147483520;         
+      bitmask = -2147483520;         
       break;
     case 8:
       //0111 1111 1111 1111 1111 1111 0000 0000
-      bitmask = 2147483392;         
+      bitmask = -2147483392;         
       break;
     case 9:
       //0111 1111 1111 1111 1111 1110 0000 0000
-      bitmask = 2147483136;         
+      bitmask = -2147483136;         
       break;
     case 10:
       //0111 1111 1111 1111 1111 1100 0000 0000
-      bitmask = 2147482624;         
+      bitmask = -2147482624;         
       break;
     case 11:
       //0111 1111 1111 1111 1111 1000 0000 0000
-      bitmask = 2147481600;         
+      bitmask = -2147481600;         
       break;
     case 12:
       //0111 1111 1111 1111 1111 0000 0000 0000
-      bitmask = 2147479552;         
+      bitmask = -2147479552;         
       break;
   }
 
