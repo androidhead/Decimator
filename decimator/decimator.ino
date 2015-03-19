@@ -8,6 +8,11 @@
  int FOOTSWITCH = 7; 
  int TOGGLE = 2; 
 
+int maximum = 2048;
+int minimum = 2048;
+bool newMax = false;
+bool newMin = false;
+
 void setup()
 {   
   setupTimers();
@@ -20,7 +25,28 @@ void setup()
   //DAC Configuration
   analogWrite(DAC0,0);  // Enables DAC0
   analogWrite(DAC1,0);  // Enables DAC1  
+  
+  //setup serial
+  Serial.begin(9600);
 }
+
+void loop()
+{
+  if(newMax)
+  {
+    Serial.print("new max");
+    Serial.println(maximum);
+  }
+  newMax = false;
+
+  if(newMin)
+  {
+    Serial.print("new min");
+    Serial.println(minimum);
+  }
+  newMin = false;
+}
+
 
 void setupTimers()
 {
@@ -80,6 +106,10 @@ void TC4_Handler()
   //bit depth
   in_ADC0 = ChangeBitDepth(in_ADC0, POT1);
   in_ADC1 = ChangeBitDepth(in_ADC1, POT1);
+  
+  //test for negative
+  in_ADC0 = TestForNegative(in_ADC0);
+  in_ADC1 = TestForNegative(in_ADC1);
 
   //sample rate
   ChangeSampleRate(POT0);
@@ -93,6 +123,24 @@ void TC4_Handler()
   dacc_write_conversion_data(DACC_INTERFACE, out_DAC0);//write on DAC
   dacc_set_channel_selection(DACC_INTERFACE, 1);          //select DAC channel 1
   dacc_write_conversion_data(DACC_INTERFACE, out_DAC1);//write on DAC
+}
+
+
+int TestForNegative(int in)
+{
+   //Serial.println("TestForNegative");
+   if(in < minimum)
+   {
+     minimum = in;
+     newMin = true;
+   }
+   if(in > maximum)
+   {
+     maximum = in;
+     newMax = true;
+   }
+    
+    return in;     
 }
 
 void ChangeSampleRate(int potPosition)
