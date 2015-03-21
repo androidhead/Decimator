@@ -1,17 +1,11 @@
 // Licensed under a Creative Commons Attribution 3.0 Unported License.
 // Based on rcarduino.blogspot.com previous work.
 // www.electrosmash.com/pedalshield
-
- int in_ADC0, in_ADC1;  //variables for 2 ADCs values (ADC0, ADC1)
- int POT0, POT1, POT2, out_DAC0, out_DAC1; //variables for 3 pots (ADC8, ADC9, ADC10)
- int LED = 3;
- int FOOTSWITCH = 7; 
- int TOGGLE = 2; 
-
-int maximum = 2048;
-int minimum = 2048;
-bool newMax = false;
-bool newMin = false;
+int in_ADC0, in_ADC1;  //variables for 2 ADCs values (ADC0, ADC1)
+int POT0, POT1, POT2, out_DAC0, out_DAC1; //variables for 3 pots (ADC8, ADC9, ADC10)
+int LED = 3;
+int FOOTSWITCH = 7; 
+int TOGGLE = 2; 
 
 void setup()
 {   
@@ -26,25 +20,13 @@ void setup()
   analogWrite(DAC0,0);  // Enables DAC0
   analogWrite(DAC1,0);  // Enables DAC1  
   
-  //setup serial
+  //setup serial port (for logging)
   Serial.begin(9600);
 }
 
 void loop()
 {
-  if(newMax)
-  {
-    Serial.print("new max");
-    Serial.println(maximum);
-  }
-  newMax = false;
-
-  if(newMin)
-  {
-    Serial.print("new min");
-    Serial.println(minimum);
-  }
-  newMin = false;
+  LogMinMax();  //see "min max logging" section below
 }
 
 
@@ -103,14 +85,14 @@ void TC4_Handler()
   POT1=ADC->ADC_CDR[11];                   // read data from ADC9   
   POT2=ADC->ADC_CDR[12];                   // read data from ADC10    
 
+  //log maximum and minumum ADC values
+  RegisterMinMax(in_ADC0);
+
+
   //bit depth
   in_ADC0 = ChangeBitDepth(in_ADC0, POT1);
   in_ADC1 = ChangeBitDepth(in_ADC1, POT1);
   
-  //test for negative
-  in_ADC0 = TestForNegative(in_ADC0);
-  in_ADC1 = TestForNegative(in_ADC1);
-
   //sample rate
   ChangeSampleRate(POT0);
   
@@ -125,23 +107,6 @@ void TC4_Handler()
   dacc_write_conversion_data(DACC_INTERFACE, out_DAC1);//write on DAC
 }
 
-
-int TestForNegative(int in)
-{
-   //Serial.println("TestForNegative");
-   if(in < minimum)
-   {
-     minimum = in;
-     newMin = true;
-   }
-   if(in > maximum)
-   {
-     maximum = in;
-     newMax = true;
-   }
-    
-    return in;     
-}
 
 void ChangeSampleRate(int potPosition)
 {
@@ -188,6 +153,47 @@ int ChangeBitDepth(int input, int potPosition)
     
   return input;
 }
+
+
+//BEGIN: min max logging
+int maximum = 2048;
+bool logMax = false;
+int minimum = 2048;
+bool logMin = false;
+int RegisterMinMax(int in)
+{
+  if(in < minimum)
+  {
+    minimum = in;
+    logMin = true;
+  }
+  if(in > maximum)
+  {
+    maximum = in;
+    logMax = true;
+  }
+}
+void LogMinMax()
+{
+  if(logMax)
+  {
+    Serial.print("new max");
+    Serial.println(maximum);
+  }
+  logMax = false;
+
+  if(logMin)
+  {
+    Serial.print("new min");
+    Serial.println(minimum);
+  }
+  logMin = false;
+}
+//END: min max logging
+
+
+
+
 
 int ChangeBitDepth2(int input, int potPosition)
 {
@@ -287,4 +293,3 @@ int ChangeBitDepth4(int input, int potPosition)
       
   return input & (bitmask + baseBitMask);
 }
-
