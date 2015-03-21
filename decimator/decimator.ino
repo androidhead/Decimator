@@ -6,6 +6,7 @@ int POT0, POT1, POT2, out_DAC0, out_DAC1; //variables for 3 pots (ADC8, ADC9, AD
 int LED = 3;
 int FOOTSWITCH = 7; 
 int TOGGLE = 2; 
+bool ToggleIsUp = false;
 
 void setup()
 {   
@@ -20,15 +21,21 @@ void setup()
   analogWrite(DAC0,0);  // Enables DAC0
   analogWrite(DAC1,0);  // Enables DAC1  
   
+  
+  //Pin Configuration
+  pinMode(LED, OUTPUT);  
+  pinMode(FOOTSWITCH, INPUT);     
+  pinMode(TOGGLE, INPUT);    
+  
   //setup serial port (for logging)
   Serial.begin(9600);
 }
 
 void loop()
-{
-  LogMinMax();  //see "min max logging" section below
+{  
+  LogMinMax();  //see "min max logging" section below  
+  ToggleIsUp = !digitalRead(TOGGLE);
 }
-
 
 void setupTimers()
 {
@@ -84,14 +91,25 @@ void TC4_Handler()
   POT0=ADC->ADC_CDR[10];                   // read data from ADC8        
   POT1=ADC->ADC_CDR[11];                   // read data from ADC9   
   POT2=ADC->ADC_CDR[12];                   // read data from ADC10    
+  
 
   //log maximum and minumum ADC values
-  RegisterMinMax(in_ADC0);
+  RegisterMinMax(in_ADC1);
 
 
   //bit depth
-  in_ADC0 = ChangeBitDepth(in_ADC0, POT1);
-  in_ADC1 = ChangeBitDepth(in_ADC1, POT1);
+  if(ToggleIsUp)
+  {
+    in_ADC0 = ChangeBitDepth(in_ADC0, POT1);
+    in_ADC1 = ChangeBitDepth(in_ADC1, POT1);
+  }
+  else //alt bit depth
+  {
+    in_ADC0 = ChangeBitDepth3(in_ADC0, POT1);
+    in_ADC1 = ChangeBitDepth3(in_ADC1, POT1);
+  }
+  
+  
   
   //sample rate
   ChangeSampleRate(POT0);
