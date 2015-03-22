@@ -93,7 +93,7 @@ void TC4_Handler()
   POT2=ADC->ADC_CDR[12];                   // read data from ADC10    
   
 
-  //log maximum and minumum ADC values
+  //log Maximum and minumum ADC values
   RegisterMinMax(in_ADC1);
 
 
@@ -174,38 +174,38 @@ int ChangeBitDepth(int input, int potPosition)
 
 
 //BEGIN: min max logging
-int maximum = 2048;
-bool logMax = false;
-int minimum = 2048;
-bool logMin = false;
+int Maximum = 2048;
+bool LogMax = false;
+int Minimum = 2048;
+bool LogMin = false;
 int RegisterMinMax(int in)
 {
-  if(in < minimum)
+  if(in < Minimum)
   {
-    minimum = in;
-    logMin = true;
+    Minimum = in;
+    LogMin = true;
   }
-  if(in > maximum)
+  if(in > Maximum)
   {
-    maximum = in;
-    logMax = true;
+    Maximum = in;
+    LogMax = true;
   }
 }
 void LogMinMax()
 {
-  if(logMax)
+  if(LogMax)
   {
     Serial.print("new max");
-    Serial.println(maximum);
+    Serial.println(Maximum);
   }
-  logMax = false;
+  LogMax = false;
 
-  if(logMin)
+  if(LogMin)
   {
     Serial.print("new min");
-    Serial.println(minimum);
+    Serial.println(Minimum);
   }
-  logMin = false;
+  LogMin = false;
 }
 //END: min max logging
 
