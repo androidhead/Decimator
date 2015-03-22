@@ -33,7 +33,7 @@ void setup()
 
 void loop()
 {  
-  LogMinMax();  //see "min max logging" section below  
+  WriteLog();  //see "min max logging" section below  
   ToggleIsUp = !digitalRead(TOGGLE);
 }
 
@@ -128,6 +128,10 @@ void TC4_Handler()
 
 void ChangeSampleRate(int potPosition)
 {
+  //for logging
+  //int scaledPotPostion=map(potPosition,0,4095,0,12);   
+  //RegisterSamplingRatePotPosition(scaledPotPostion);
+
   int sampleSize=map(potPosition,0,4095,109,8400);   
   //10500/sampleSize = sampling rate in MHz
   TC_SetRC(TC1, 1, sampleSize); 
@@ -137,7 +141,9 @@ void ChangeSampleRate(int potPosition)
 int ChangeBitDepth(int input, int potPosition)
 {
   //determine scaling factor
-  potPosition = map(potPosition, 0, 4095, 0, 7);  
+  potPosition = map(potPosition, 0, 4095, 0, 7);    
+  //RegisterBitDepthPotPosition(potPosition); //for logging
+
   int scaleTo = 4095;
   switch (potPosition) {
     case 1:
@@ -173,41 +179,79 @@ int ChangeBitDepth(int input, int potPosition)
 }
 
 
-//BEGIN: min max logging
+//BEGIN: logging
 int Maximum = 2048;
-bool LogMax = false;
+bool MaximumChanged = false;
 int Minimum = 2048;
-bool LogMin = false;
-int RegisterMinMax(int in)
+bool MinimumChanged = false;
+int SamplingRatePotPosition = 0;
+int SamplingRatePotPositionChanged = false;
+int BitDepthPotPosition = 0;
+int BitDepthPotPositionChanged = false;
+
+void RegisterMinMax(int in)
 {
   if(in < Minimum)
   {
     Minimum = in;
-    LogMin = true;
+    MinimumChanged = true;
   }
   if(in > Maximum)
   {
     Maximum = in;
-    LogMax = true;
+    MaximumChanged = true;
   }
 }
-void LogMinMax()
+
+void RegisterSamplingRatePotPosition(int potPosition)
 {
-  if(LogMax)
+  if(potPosition != SamplingRatePotPosition)
   {
-    Serial.print("new max");
+    SamplingRatePotPosition = potPosition;
+    SamplingRatePotPositionChanged = true;
+  }
+}
+
+void RegisterBitDepthPotPosition(int potPosition)
+{
+  if(potPosition != BitDepthPotPosition)
+  {
+    BitDepthPotPosition = potPosition;
+    BitDepthPotPositionChanged = true;
+  }
+}
+
+void WriteLog()
+{
+  if(MaximumChanged)
+  {
+    Serial.print("new max ");
     Serial.println(Maximum);
   }
-  LogMax = false;
+  MaximumChanged = false;
 
-  if(LogMin)
+  if(MinimumChanged)
   {
-    Serial.print("new min");
+    Serial.print("new min ");
     Serial.println(Minimum);
+  }        
+  MinimumChanged = false;
+  
+  if(SamplingRatePotPositionChanged)
+  {
+    Serial.print("new sampling rate pot position ");
+    Serial.println(SamplingRatePotPosition);      
   }
-  LogMin = false;
+  SamplingRatePotPositionChanged = false;
+  
+  if(BitDepthPotPositionChanged)
+  {
+    Serial.print("new bit depth pot position ");
+    Serial.println(BitDepthPotPosition);      
+  }
+  BitDepthPotPositionChanged = false;      
 }
-//END: min max logging
+//END: logging
 
 
 
@@ -227,7 +271,8 @@ int ChangeBitDepth3(int input, int potPosition)
 
   //determine severity of bit mask
   potPosition = map(potPosition, 0, 4095, 0, 12);  
-   
+  RegisterBitDepthPotPosition(potPosition); //for logging
+  
   switch (potPosition) {
     case 1:
       //0111 1111 1111 1111 1111 1111 1111 1110
