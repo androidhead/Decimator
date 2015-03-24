@@ -92,13 +92,9 @@ void TC4_Handler()
   POT1=ADC->ADC_CDR[11];                   // read data from ADC9   
   POT2=ADC->ADC_CDR[12];                   // read data from ADC10    
   
-
-  //log Maximum and minumum ADC values
-  RegisterMinMax(in_ADC1);
-
-
+  
   //bit depth
-  if(ToggleIsUp)
+  /*if(ToggleIsUp)
   {
     in_ADC0 = ChangeBitDepth(in_ADC0, POT1);
     in_ADC1 = ChangeBitDepth(in_ADC1, POT1);
@@ -107,16 +103,20 @@ void TC4_Handler()
   {
     in_ADC0 = ChangeBitDepth3(in_ADC0, POT1);
     in_ADC1 = ChangeBitDepth3(in_ADC1, POT1);
-  }
-  
-  
-  
+  }*/
+
+  in_ADC0 = OnlyAllowPositive(in_ADC0, 2048);
+  in_ADC1 = OnlyAllowPositive(in_ADC1, 2048);
+          
   //sample rate
   ChangeSampleRate(POT0);
+ 
+  //log Maximum and minumum ADC values. put this before/after processing to see the effect
+  RegisterMinMax(in_ADC1); 
   
   //Adjust the volume with POT2
-  out_DAC0=map(in_ADC0,0,4095,1,POT2);
-  out_DAC1=map(in_ADC1,0,4095,1,POT2);
+  out_DAC0=in_ADC0;  //map(in_ADC0,0,4095,1,POT2);
+  //out_DAC1=in_ADC1;  //map(in_ADC1,0,4095,1,POT2);
     
   //Write the DACs
   dacc_set_channel_selection(DACC_INTERFACE, 0);          //select DAC channel 0
@@ -176,6 +176,14 @@ int ChangeBitDepth(int input, int potPosition)
   input = map(input, 0, scaleTo, 0, 4095);
     
   return input;
+}
+
+int OnlyAllowPositive(int in, int zeroPosition)
+{
+   if(in >= zeroPosition){ 
+     return in;
+   }    
+   else{ return zeroPosition;}  
 }
 
 
